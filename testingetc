@@ -1,0 +1,94 @@
+from bandit_module import MultiArmedBandit
+from etc_module import ETC
+
+import numpy as np
+
+# 3. Run for 50 rounds total
+#print(f"Initial means: {my_bandit.means}")
+
+num_arms = 10
+N = 1000
+n = 10000
+results = np.zeros((N, n))
+correct_action = np.zeros((N, n))
+regret = np.zeros((N,n))
+
+estimated_means_final = np.zeros((N, num_arms))
+actual_means_final = np.zeros((N, num_arms))
+
+arm_choices = np.zeros((n, num_arms))
+
+for i in range(N):
+
+    bandit = MultiArmedBandit(num_arms=num_arms, dist_type='gaussian', delta=None)
+
+    agent = ETC(bandit=bandit, m=800)
+
+    mu_star = np.max(bandit.means)
+    best_arm_index = np.argmax(bandit.means)
+
+    for k in range(n):
+        arm, reward = agent.play()
+        regret[i,k] = mu_star - bandit.means[arm]
+
+        correct_action[i, k] = 1 if arm == best_arm_index else 0
+
+        arm_choices[k, arm] += 1
+
+
+
+    estimated_means_final[i] = agent.rewards_per_arm / agent.m
+    actual_means_final[i] = bandit.means
+
+
+avg_regret = np.mean(regret, axis=0)
+avg_correct_rate = np.mean(correct_action, axis=0)
+avg_probs = arm_choices / N 
+
+var_regret = np.var(regret, axis=0)
+var_correct_rate = np.var(correct_action, axis=0)
+
+#Plots:
+import matplotlib.pyplot as plt
+
+# --- Plot (a): Regrets over time ---
+plt.figure(figsize=(10, 5))
+# We plot Cumulative Regret because it's the standard way to see if an algorithm "converges"
+plt.plot(np.cumsum(avg_regret))
+plt.title("Metric (a): Cumulative Regret over Time")
+plt.xlabel("Round (n)")
+plt.ylabel("Cumulative Regret")
+plt.grid(True)
+plt.show()
+
+# --- Plot (b): Correct Action Rates ---
+plt.figure(figsize=(10, 5))
+plt.plot(avg_correct_rate)
+plt.title("Metric (b): Average Correct Action Rate")
+plt.xlabel("Round (n)")
+plt.ylabel("Probability of Picking Best Arm")
+plt.ylim(0, 1.1)
+plt.grid(True)
+plt.show()
+
+# --- Plot (c): Estimated vs Actual Means ---
+# We use the average across all N experiments to see how close the agent got
+plt.figure(figsize=(10, 5))
+x = np.arange(num_arms)
+plt.bar(x - 0.2, np.mean(actual_means_final, axis=0), 0.4, label='Actual Means')
+plt.bar(x + 0.2, np.mean(estimated_means_final, axis=0), 0.4, label='ETC Estimates')
+plt.title("Metric (c): Estimated vs Actual Means per Arm")
+plt.xlabel("Arm Index")
+plt.ylabel("Mean Value")
+plt.legend()
+plt.show()
+
+# --- Plot (d): Average Probabilities of choosing arms ---
+plt.figure(figsize=(10, 5))
+for a in range(num_arms):
+    plt.plot(avg_probs[:, a], label=f"Arm {a}")
+plt.title("Metric (d): Probability of Choosing Each Arm")
+plt.xlabel("Round (n)")
+plt.ylabel("Selection Probability")
+# Note: You might want to skip the legend if 10 arms make it too crowded
+plt.show()
