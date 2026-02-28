@@ -1,9 +1,9 @@
-from bandit_module import MultiArmedBandit
-from etc_module import ETC
-from greedy_module import Greedy
-from ucb_module import UCB
-from boltzmann_module import Boltzmann
-from policy_gradient_module import Policy_Gradient
+from Sheet1.bandit_module import MultiArmedBandit
+from Sheet1.etc_module import ETC
+from Sheet2.greedy_module import Greedy
+from Sheet2.ucb_module import UCB
+from Sheet2.boltzmann_module import Boltzmann
+from Sheet2.policy_gradient_module import Policy_Gradient
 
 
 import numpy as np
