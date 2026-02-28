@@ -1,18 +1,29 @@
-from Sheet1.bandit_module import MultiArmedBandit
-from Sheet1.etc_module import ETC
-from Sheet2.greedy_module import Greedy
-from Sheet2.ucb_module import UCB
-from Sheet2.boltzmann_module import Boltzmann
-from Sheet2.policy_gradient_module import Policy_Gradient
+import sys
+from pathlib import Path
+
+# 1. Path(__file__).parent gets you the 'Sheet2' folder.
+# 2. .parent goes up one level to the 'RL' folder.
+# 3. / "Sheet1" goes down into the 'Sheet1' folder.
+sheet1_path = Path(__file__).parent.parent / "Sheet1"
+
+# Add this folder to Python's search path
+sys.path.append(str(sheet1_path))
+
+# Now you can import it normally, without the dots!
+from bandit_module import MultiArmedBandit
+from etc_module import ETC
+from greedy_module import Greedy
+from ucb_module import UCB
+from boltzmann_module import Boltzmann
+from policy_gradient_module import Policy_Gradient
 
 
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.stats as stats
 
-# Ensure your modules are imported here
-# from bandit_module import MultiArmedBandit
-# ... etc
+
+
 
 num_arms = 5
 N = 100  # Tip: Start with N=10 or N=100 to test if the code works before running N=1000!
