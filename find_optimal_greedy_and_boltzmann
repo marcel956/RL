@@ -1,0 +1,65 @@
+from bandit_module import MultiArmedBandit
+from etc_module import ETC
+from greedy_module import Greedy
+from ucb_module import UCB
+from boltzmann_module import Boltzmann
+from policy_gradient_module import Policy_Gradient
+
+import numpy as np
+
+print("--- Starting Compute-Efficient Parameter Search ---")
+
+# 1. Setup our "mini-run" parameters
+search_N = 50      # Fewer iterations
+search_n = 2000    # Shorter time horizon
+num_arms = 5
+
+# Create the fixed bandit for the search
+search_bandit = MultiArmedBandit(num_arms=num_arms, dist_type='bernoulli')
+mu_star = np.max(search_bandit.means)
+
+# 2. Define the parameters we want to test
+eps_candidates = [0.01, 0.05, 0.1, 0.2, 0.3]
+theta_candidates = [1.0, 5.0, 10.0, 20.0, 50.0, 100.0]
+
+# --- Search for best Epsilon (Greedy) ---
+print("\nSearching for optimal epsilon...")
+best_eps = None
+lowest_eps_regret = np.inf
+
+for eps in eps_candidates:
+    total_regret = 0
+    for i in range(search_N):
+        agent = Greedy(search_bandit, epsilon=eps)
+        for t in range(search_n):
+            arm, _ = agent.play()
+            total_regret += (mu_star - search_bandit.means[arm])
+            
+    avg_regret = total_regret / search_N
+    print(f"  eps={eps:.2f} -> Avg Regret: {avg_regret:.1f}")
+    if avg_regret < lowest_eps_regret:
+        lowest_eps_regret = avg_regret
+        best_eps = eps
+
+# --- Search for best Theta (Boltzmann) ---
+print("\nSearching for optimal theta...")
+best_theta = None
+lowest_theta_regret = np.inf
+
+for theta in theta_candidates:
+    total_regret = 0
+    for i in range(search_N):
+        agent = Boltzmann(search_bandit, theta=theta)
+        for t in range(search_n):
+            arm, _ = agent.play()
+            total_regret += (mu_star - search_bandit.means[arm])
+            
+    avg_regret = total_regret / search_N
+    print(f"  theta={theta:.1f} -> Avg Regret: {avg_regret:.1f}")
+    if avg_regret < lowest_theta_regret:
+        lowest_theta_regret = avg_regret
+        best_theta = theta
+
+print("\n--- Search Complete ---")
+print(f"Optimal epsilon found: {best_eps}")
+print(f"Optimal theta found: {best_theta}")

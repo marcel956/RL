@@ -1,9 +1,10 @@
 import numpy as np
 
-class Greedy:
-    def __init__(self, bandit, epsilon = None, initial_q = None):
+class UCB:
+    def __init__(self, bandit, delta = None, sigma=1, initial_q = None):
         self.bandit = bandit
-        self.epsilon = epsilon
+        self.delta = delta
+        self.sigma = sigma
         self.total_rounds = 0
 
         # T_a: counts of how many times each arm was pulled
@@ -18,28 +19,29 @@ class Greedy:
             self.q_values = np.zeros(self.bandit.num_arms)
 
 
-
     def play(self):
 
         self.total_rounds += 1
 
-        #Get Current Epsilon
+        #Identify unexplored arms
+        # np.where returns a tuple, so we take the first element [0] to get the array of indices
+        unexplored_arms = np.where(self.counts == 0)[0]
 
-        if callable(self.epsilon):
-            current_eps = self.epsilon(self.total_rounds)
+
+        if len(unexplored_arms) > 0:
+            # If any arm has a count of 0, its UCB is infinity. 
+            # We pick the first unexplored arm we find.
+            chosen_arm = unexplored_arms[0]
         else:
-            current_eps = self.epsilon
+            #Calculate UCB values
+            exploration_bonus = np.sqrt(( 2 * (self.sigma**2) * np.log(1 / self.delta)) / self.counts)
+            ucb_values = self.q_values + exploration_bonus
 
+            #Select Action
+            max_ucb = np.max(ucb_values)
+            best_arms = np.where(ucb_values == max_ucb)[0]
+            chosen_arm = np.random.choice(best_arms)
 
-        #Select Action
-        if np.random.rand() < current_eps:
-            #Explore
-            chosen_arm = np.random.randint(self.bandit.num_arms)
-        else:
-            #Exploit
-            max_q = np.max(self.q_values)
-            self.best_arms = np.where(self.q_values == max_q)[0]
-            chosen_arm = np.random.choice(self.best_arms)
 
         return self.pull_and_update(chosen_arm)
 
@@ -53,5 +55,4 @@ class Greedy:
         self.q_values[chosen_arm] += (1.0 / n) * (reward - self.q_values[chosen_arm])
         
         return chosen_arm, reward
-
 
