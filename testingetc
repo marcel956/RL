@@ -18,11 +18,14 @@ actual_means_final = np.zeros((N, num_arms))
 
 arm_choices = np.zeros((n, num_arms))
 
+bandit = MultiArmedBandit(num_arms=num_arms, dist_type='gaussian', delta=None)
+
+
+
 for i in range(N):
 
-    bandit = MultiArmedBandit(num_arms=num_arms, dist_type='gaussian', delta=None)
+    agent = ETC(bandit=bandit, m=100)
 
-    agent = ETC(bandit=bandit, m=800)
 
     mu_star = np.max(bandit.means)
     best_arm_index = np.argmax(bandit.means)
