@@ -26,7 +26,7 @@ import scipy.stats as stats
 
 
 num_arms = 5
-N = 100  # Tip: Start with N=10 or N=100 to test if the code works before running N=1000!
+N = 100  
 n = 10000
 
 # We use a dictionary to define our agents and their parameters easily

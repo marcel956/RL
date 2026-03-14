@@ -1,6 +1,18 @@
-from Sheet1.bandit_module import MultiArmedBandit
+import sys
+from pathlib import Path
+
+# 1. Path(__file__).parent gets you the 'Sheet2' folder.
+# 2. .parent goes up one level to the 'RL' folder.
+# 3. / "Sheet1" goes down into the 'Sheet1' folder.
+sheet1_path = Path(__file__).parent.parent / "Sheet1"
+
+# Add this folder to Python's search path
+sys.path.append(str(sheet1_path))
+
+# Now you can import it normally, without the dots!
+from bandit_module import MultiArmedBandit
 from etc_module import ETC
-from Sheet2.greedy_module import Greedy
+from greedy_module import Greedy
 from ucb_module import UCB
 from boltzmann_module import Boltzmann
 from policy_gradient_module import Policy_Gradient
