@@ -1,16 +1,19 @@
 import sys
 from pathlib import Path
 
-# Construct paths to import modules from sibling directories (Sheet1, Sheet2)
+# 1. Path(__file__).parent gets you the 'Sheet2' folder.
+# 2. .parent goes up one level to the 'RL' folder.
+# 3. / "Sheet1" goes down into the 'Sheet1' folder.
 sheet1_path = Path(__file__).parent.parent / "Sheet1"
 sheet2_path = Path(__file__).parent.parent / "Sheet2"
 
-# Add folder to Python's search path
+
+# Add this folder to Python's search path
 sys.path.append(str(sheet1_path))
 sys.path.append(str(sheet2_path))
 
 
-# Import modules
+# Now you can import it normally, without the dots!
 from bandit_module import MultiArmedBandit
 from etc_module import ETC
 from greedy_module import Greedy
@@ -25,12 +28,12 @@ import scipy.stats as stats
 
 
 
-# --- Simulation Parameters ---
-num_arms = 5
-N = 100   # Number of independent simulation runs (for statistical significance)
-n = 10000 # Number of rounds (time horizon) for each simulation run
 
-# Use a dictionary to define our agents and their parameters 
+num_arms = 5
+N = 100  
+n = 10000
+
+# We use a dictionary to define our agents and their parameters easily
 agent_configs = {
     "ETC (m=100)": lambda b: ETC(b, m=100), #optimal: m=1287
     "Greedy (eps=0.01)": lambda b: Greedy(b, epsilon=0.01),
@@ -39,24 +42,22 @@ agent_configs = {
     "Policy Gradient": lambda b: Policy_Gradient(b, alpha=0.1, use_baseline=True)
 }
 
-# --- Data Structures for Storing Results ---
-# Dictionaries to track metrics over time for each algorithm.
-# Each value is a NumPy array of shape (N, n) to store the metric's value
-# at each time step 't' for each independent run 'i'.
+# Data structures to hold results for all algorithms
+# Shape: (number of algorithms, N iterations, n rounds)
+num_algos = len(agent_configs)
+
+# Track metrics over time            
 all_regrets_over_time = {name: np.zeros((N, n)) for name in agent_configs}
 optimal_action_over_time = {name: np.zeros((N, n)) for name in agent_configs}
 mae_over_time = {name: np.zeros((N, n)) for name in agent_configs}
 
-
-# Dictionaries to store a single, final value at the end of each run (for boxplots).
-# Each value is a NumPy array of shape (N).
+# Dictionaries for the boxplot data at time n
 final_regrets = {name: np.zeros(N) for name in agent_configs}
 final_estimates_error = {name: np.zeros(N) for name in agent_configs}
 prob_optimal_arm = {name: np.zeros(N) for name in agent_configs}
-final_tracked_values = {name: np.zeros((N, num_arms)) for name in agent_configs}
 
-# --- Bandit Initialization ---
 print("Starting simulation...")
+
 bandit = MultiArmedBandit(num_arms=num_arms, dist_type='bernoulli', means=[0.9, 0.8, 0.5, 0.3, 0.1])
 true_means = bandit.means
 best_arm_index = np.argmax(true_means)
@@ -66,26 +67,32 @@ print(f"Fixed Bandit True Means: {true_means}")
 print(f"Optimal Arm: {best_arm_index} (Mean: {mu_star:.3f})")
 
 
-# --- Main Simulation Loop ---
-for i in range(N): # Loop over N independent runs for statistical validity
+# Add this right below prob_optimal_arm = ...
+final_tracked_values = {name: np.zeros((N, num_arms)) for name in agent_configs}
+
+
+for i in range(N):
     if (i + 1) % 10 == 0:
         print(f"Running iteration {i + 1}/{N}...")
 
     for algo_name, agent_init in agent_configs.items():
         # Initialize the specific agent for this round
         agent = agent_init(bandit)
+        
+        # We track how many times the optimal arm was chosen to calculate probabilities
+        optimal_pulls = 0
 
-        for t in range(n): # Loop over the time horizon n (a single agent run)
+        for t in range(n):
             arm, reward = agent.play()
             
-            # Calculate and store instantaneous regret for this step
+            # 1. Calculate Instantaneous Regret
             regret = mu_star - true_means[arm]
             all_regrets_over_time[algo_name][i, t] = regret
 
             
             # Track if the optimal action was taken at step t
             if arm == best_arm_index:
-                 optimal_action_over_time[algo_name][i, t] = 1
+                 optimal_action_over_time[algo_name][i, t] = 1 # 1 for True, 0 for False
                 
 
             # Track MAE over time (skip Policy Gradient since it doesn't estimate means)
@@ -94,8 +101,10 @@ for i in range(N): # Loop over N independent runs for statistical validity
                 mae_over_time[algo_name][i, t] = mae
             else:
                 mae_over_time[algo_name][i, t] = np.nan
-                
 
+
+
+                
         # --- CONSOLIDATED DATA COLLECTION AT THE END OF HORIZON n ---
         # Cumulative regret for this specific iteration
         final_regrets[algo_name][i] = np.sum(all_regrets_over_time[algo_name][i, :])
@@ -135,6 +144,7 @@ for algo_name in agent_configs.keys():
     else:
         print(f"{algo_name} (Final Estimated Q-Values):")
         print(f"{np.round(avg_final_vals, 3)}\n")
+
 
 
 
