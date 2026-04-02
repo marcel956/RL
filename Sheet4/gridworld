@@ -236,32 +236,48 @@ class gridworld:
 
     def monte_carlo(self, policy, num_episodes, gamma=1.0):
 
+        # Initialize variables for Q values and returns
         Q = {}
 
         returns = {}
 
+        # Loop through number of episodes
         for i in range(num_episodes):
 
-
+            # Reset state and episode
             state = self.reset()
 
             episode = []
 
             while True:
 
-                next_state, reward, is_terminal = self.step(state, policy[state])
+                # 1. Look up what the policy says to do
+                policy_action = policy[state]
+                
+                # 2. If the policy gave is a list, pick randomly
+                if type(policy_action) == list:
+                    action = np.random.choice(policy_action)
+                # 3. If the policy gave is a single integer, use it
+                else:
+                    action = policy_action
 
-                episode.append((state, policy[state], reward))
+                # 4. Take the step
+                next_state, reward, is_terminal = self.step(state, action)
+
+                episode.append((state, action, reward))
 
                 state = next_state
 
+                # 5. Check if terminal
                 if is_terminal:
                     break
 
             G = 0
 
+            # Loop through episode backwards
             for step_state, step_action, step_reward in reversed(episode):
-
+                
+                # Calculate return
                 G = gamma * G + step_reward
 
                 state_action = (step_state, step_action)
@@ -271,9 +287,13 @@ class gridworld:
 
                 returns[state_action].append(G)
 
+                # Calculate Q value
                 Q[state_action] = np.mean(returns[state_action])
 
         return Q
+
+
+
 
     def visualize_policy(self, policy):
         # Map string actions to unicode arrows
@@ -354,3 +374,64 @@ env.visualize_policy(dummy_policy)
 print("\n--- Running Monte Carlo ---")
 q_values = env.monte_carlo(dummy_policy, num_episodes=1000)
 print(f"Estimated Q-Value for starting at (2,0) and going right: {q_values.get(((2,0), 'right'), 0):.2f}")
+
+
+
+
+
+# ==========================================
+# GRIDWORLD RANDOM WALK TEST SCRIPT
+# ==========================================
+
+# 1. Define your rules
+rewards = {
+    (0, 3): {"type": "goal", "reward_type": "deterministic", "value": 10, "is_terminal": True},
+    (1, 1): {"type": "bomb", "reward_type": "deterministic", "value": -10, "is_terminal": True},
+    (2, 2): {"type": "bonus", "reward_type": "normal", "mean": 5, "std": 1.0, "is_terminal": False}
+}
+
+noise_dirs = {"up": 0.25, "down": 0.25, "left": 0.25, "right": 0.25}
+
+# 2. Create the environment
+env = gridworld(
+    m=3, n=4, 
+    reward_structure=rewards, 
+    default_reward=-1, 
+    wall_behavior="reflect", 
+    start_state=(2, 0), 
+    wind_direction="right", 
+    wind_prob=0.1, 
+    slip_prob=0.1, 
+    noise_prob=0.05, 
+    noise_directions=noise_dirs
+)
+
+# 3. Use the allowed_actions dictionary as a Random Policy
+random_grid_policy = env.allowed_actions
+
+# 4. VERY IMPORTANT BUG FIX FOR MONTE CARLO
+# (You must update the type-checking inside your monte_carlo function so it doesn't break on strings!)
+# Find this inside your monte_carlo function and replace it:
+"""
+                # 2. If the policy gave is a list, pick randomly
+                if type(policy_action) == list:
+                    # REMOVED int() because actions are strings here!
+                    action = np.random.choice(policy_action) 
+                # 3. If the policy gave is a single string/integer, use it
+                else:
+                    action = policy_action
+"""
+
+# 5. Run Monte Carlo!
+# Using 2000 episodes and gamma=0.9 to prevent infinite random wandering loops
+print("\n--- Running Monte Carlo Random Walk ---")
+# 
+grid_q_values = env.monte_carlo(random_grid_policy, num_episodes=2000, gamma=0.9)
+
+print("\nEstimated Q-Values for our Random Walk (First 15 printed):")
+count = 0
+for state_action, value in sorted(grid_q_values.items()):
+    print(f"State: {state_action[0]} | Action: {state_action[1]:<5} -> Expected Return: {value:.2f}")
+    count += 1
+    if count >= 15:
+        break
