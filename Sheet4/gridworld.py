@@ -295,7 +295,7 @@ class gridworld:
 
 
 
-    def visualize_policy(self, policy):
+    def visualize_policy(self, policy, prefix=""):
         # Map string actions to unicode arrows
         action_symbols = {
             "up": "↑", 
@@ -304,10 +304,11 @@ class gridworld:
             "right": "→"
         }
         
-        print("-" * (self.n * 5)) # Print a top border
+        indent = " " * len(prefix)
+        print(prefix + "-" * (self.n * 5)) # Print a top border
         
         for row in range(self.m):
-            row_string = "|"
+            row_string = indent + "|"
             
             for col in range(self.n):
                 state = (row, col)
@@ -316,122 +317,129 @@ class gridworld:
                 if state in self.terminal_states:
                     # If it's a positive reward, print G for Goal. Otherwise B for Bomb.
                     if self.reward_structure[state].get("value", 0) > 0:
-                        row_string += " G  |"
+                        row_string += " \033[92mG\033[0m  |"
                     else:
-                        row_string += " B  |"
+                        row_string += " \033[91mB\033[0m  |"
                 
                 # Otherwise, print the arrow for the policy's action
                 else:
                     # .get() prevents crashes if a state is somehow missing from the policy
                     action = policy.get(state, "up") 
-                    symbol = action_symbols[action]
+                    if isinstance(action, list):
+                        symbol = "\033[93m?\033[0m"
+                    else:
+                        symbol = action_symbols.get(action, "?")
                     row_string += f" {symbol}  |"
                     
             print(row_string)
-            print("-" * (self.n * 5)) # Print a row border
+            print(indent + "-" * (self.n * 5)) # Print a row border
+
+    def get_expected_rewards(self, state, action, next_state):
+        return self.expected_rewards[next_state]
+
 
 
 
 
     
 
-#Tests:
+# #Tests:
 
-# 1. Define your rules
-rewards = {
-    (0, 3): {"type": "goal", "reward_type": "deterministic", "value": 10, "is_terminal": True},
-    (1, 1): {"type": "bomb", "reward_type": "deterministic", "value": -10, "is_terminal": True},
-    (2, 2): {"type": "bonus", "reward_type": "normal", "mean": 5, "std": 1.0, "is_terminal": False}
-}
+# # 1. Define your rules
+# rewards = {
+#     (0, 3): {"type": "goal", "reward_type": "deterministic", "value": 10, "is_terminal": True},
+#     (1, 1): {"type": "bomb", "reward_type": "deterministic", "value": -10, "is_terminal": True},
+#     (2, 2): {"type": "bonus", "reward_type": "normal", "mean": 5, "std": 1.0, "is_terminal": False}
+# }
 
-noise_dirs = {"up": 0.25, "down": 0.25, "left": 0.25, "right": 0.25}
+# noise_dirs = {"up": 0.25, "down": 0.25, "left": 0.25, "right": 0.25}
 
-# 2. Create the environment
-env = gridworld(
-    m=3, n=4, 
-    reward_structure=rewards, 
-    default_reward=-1, 
-    wall_behavior="reflect", 
-    start_state=(2, 0), 
-    wind_direction="right", 
-    wind_prob=0.1, 
-    slip_prob=0.1, 
-    noise_prob=0.05, 
-    noise_directions=noise_dirs
-)
+# # 2. Create the environment
+# env = gridworld(
+#     m=3, n=4, 
+#     reward_structure=rewards, 
+#     default_reward=-1, 
+#     wall_behavior="reflect", 
+#     start_state=(2, 0), 
+#     wind_direction="right", 
+#     wind_prob=0.1, 
+#     slip_prob=0.1, 
+#     noise_prob=0.05, 
+#     noise_directions=noise_dirs
+# )
 
-# 3. Make a dummy policy that just tells the agent to always go right or up
-dummy_policy = {}
-for r in range(env.m):
-    for c in range(env.n):
-        dummy_policy[(r, c)] = "right" if r > 0 else "up"
+# # 3. Make a dummy policy that just tells the agent to always go right or up
+# dummy_policy = {}
+# for r in range(env.m):
+#     for c in range(env.n):
+#         dummy_policy[(r, c)] = "right" if r > 0 else "up"
 
-# 4. Test your visualizer
-print("--- My Policy ---")
-env.visualize_policy(dummy_policy)
+# # 4. Test your visualizer
+# print("--- My Policy ---")
+# env.visualize_policy(dummy_policy)
 
-# 5. Test your Monte Carlo
-print("\n--- Running Monte Carlo ---")
-q_values = env.monte_carlo(dummy_policy, num_episodes=1000)
-print(f"Estimated Q-Value for starting at (2,0) and going right: {q_values.get(((2,0), 'right'), 0):.2f}")
-
-
+# # 5. Test your Monte Carlo
+# print("\n--- Running Monte Carlo ---")
+# q_values = env.monte_carlo(dummy_policy, num_episodes=1000)
+# print(f"Estimated Q-Value for starting at (2,0) and going right: {q_values.get(((2,0), 'right'), 0):.2f}")
 
 
 
-# ==========================================
-# GRIDWORLD RANDOM WALK TEST SCRIPT
-# ==========================================
 
-# 1. Define your rules
-rewards = {
-    (0, 3): {"type": "goal", "reward_type": "deterministic", "value": 10, "is_terminal": True},
-    (1, 1): {"type": "bomb", "reward_type": "deterministic", "value": -10, "is_terminal": True},
-    (2, 2): {"type": "bonus", "reward_type": "normal", "mean": 5, "std": 1.0, "is_terminal": False}
-}
 
-noise_dirs = {"up": 0.25, "down": 0.25, "left": 0.25, "right": 0.25}
+# # ==========================================
+# # GRIDWORLD RANDOM WALK TEST SCRIPT
+# # ==========================================
 
-# 2. Create the environment
-env = gridworld(
-    m=3, n=4, 
-    reward_structure=rewards, 
-    default_reward=-1, 
-    wall_behavior="reflect", 
-    start_state=(2, 0), 
-    wind_direction="right", 
-    wind_prob=0.1, 
-    slip_prob=0.1, 
-    noise_prob=0.05, 
-    noise_directions=noise_dirs
-)
+# # 1. Define your rules
+# rewards = {
+#     (0, 3): {"type": "goal", "reward_type": "deterministic", "value": 10, "is_terminal": True},
+#     (1, 1): {"type": "bomb", "reward_type": "deterministic", "value": -10, "is_terminal": True},
+#     (2, 2): {"type": "bonus", "reward_type": "normal", "mean": 5, "std": 1.0, "is_terminal": False}
+# }
 
-# 3. Use the allowed_actions dictionary as a Random Policy
-random_grid_policy = env.allowed_actions
+# noise_dirs = {"up": 0.25, "down": 0.25, "left": 0.25, "right": 0.25}
 
-# 4. VERY IMPORTANT BUG FIX FOR MONTE CARLO
-# (You must update the type-checking inside your monte_carlo function so it doesn't break on strings!)
-# Find this inside your monte_carlo function and replace it:
-"""
-                # 2. If the policy gave is a list, pick randomly
-                if type(policy_action) == list:
-                    # REMOVED int() because actions are strings here!
-                    action = np.random.choice(policy_action) 
-                # 3. If the policy gave is a single string/integer, use it
-                else:
-                    action = policy_action
-"""
+# # 2. Create the environment
+# env = gridworld(
+#     m=3, n=4, 
+#     reward_structure=rewards, 
+#     default_reward=-1, 
+#     wall_behavior="reflect", 
+#     start_state=(2, 0), 
+#     wind_direction="right", 
+#     wind_prob=0.1, 
+#     slip_prob=0.1, 
+#     noise_prob=0.05, 
+#     noise_directions=noise_dirs
+# )
 
-# 5. Run Monte Carlo!
-# Using 2000 episodes and gamma=0.9 to prevent infinite random wandering loops
-print("\n--- Running Monte Carlo Random Walk ---")
-# 
-grid_q_values = env.monte_carlo(random_grid_policy, num_episodes=2000, gamma=0.9)
+# # 3. Use the allowed_actions dictionary as a Random Policy
+# random_grid_policy = env.allowed_actions
 
-print("\nEstimated Q-Values for our Random Walk (First 15 printed):")
-count = 0
-for state_action, value in sorted(grid_q_values.items()):
-    print(f"State: {state_action[0]} | Action: {state_action[1]:<5} -> Expected Return: {value:.2f}")
-    count += 1
-    if count >= 15:
-        break
+# # 4. VERY IMPORTANT BUG FIX FOR MONTE CARLO
+# # (You must update the type-checking inside your monte_carlo function so it doesn't break on strings!)
+# # Find this inside your monte_carlo function and replace it:
+# """
+#                 # 2. If the policy gave is a list, pick randomly
+#                 if type(policy_action) == list:
+#                     # REMOVED int() because actions are strings here!
+#                     action = np.random.choice(policy_action) 
+#                 # 3. If the policy gave is a single string/integer, use it
+#                 else:
+#                     action = policy_action
+# """
+
+# # 5. Run Monte Carlo!
+# # Using 2000 episodes and gamma=0.9 to prevent infinite random wandering loops
+# print("\n--- Running Monte Carlo Random Walk ---")
+# # 
+# grid_q_values = env.monte_carlo(random_grid_policy, num_episodes=2000, gamma=0.9)
+
+# print("\nEstimated Q-Values for our Random Walk (First 15 printed):")
+# count = 0
+# for state_action, value in sorted(grid_q_values.items()):
+#     print(f"State: {state_action[0]} | Action: {state_action[1]:<5} -> Expected Return: {value:.2f}")
+#     count += 1
+#     if count >= 15:
+#         break

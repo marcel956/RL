@@ -212,6 +212,9 @@ class MultiStepBandit:
                 Q[state_action] = np.mean(returns[state_action])
 
         return Q
+    
+    def get_expected_rewards(self, state, action, next_state):
+        return self.expected_rewards[(state, action)]
 
 
 
@@ -219,75 +222,76 @@ class MultiStepBandit:
 
 
 
-# ==========================================
-# TEST SCRIPT
-# ==========================================
 
-# 1. Define the Tree Structure
-# Branch 0 has 2 steps (3 arms, then 2 arms)
-# Branch 1 has 1 step (5 arms)
-config = {
-    0: {"m_i": 2, "actions_per_step": {1: 3, 2: 2}}, 
-    1: {"m_i": 1, "actions_per_step": {1: 5}} 
-}
+# # ==========================================
+# # TEST SCRIPT
+# # ==========================================
 
-# 2. Define Custom Rewards
-# Let's make Branch 1, Step 1, Action 4 the "Jackpot"
-rewards = {
-    ((1, 1), 4): {"reward_type": "deterministic", "value": 100}
-}
+# # 1. Define the Tree Structure
+# # Branch 0 has 2 steps (3 arms, then 2 arms)
+# # Branch 1 has 1 step (5 arms)
+# config = {
+#     0: {"m_i": 2, "actions_per_step": {1: 3, 2: 2}}, 
+#     1: {"m_i": 1, "actions_per_step": {1: 5}} 
+# }
 
-# 3. Initialize the Environment
-bandit_env = MultiStepBandit(
-    branch_config=config, 
-    reward_structure=rewards, 
-    default_reward=-1 # Every step costs -1 unless specified
-)
+# # 2. Define Custom Rewards
+# # Let's make Branch 1, Step 1, Action 4 the "Jackpot"
+# rewards = {
+#     ((1, 1), 4): {"reward_type": "deterministic", "value": 100}
+# }
 
-# 4. Create a dummy policy
-# Let's tell the agent to always pick action 0 (which avoids the jackpot!)
-dummy_policy = {}
-for state, actions in bandit_env.allowed_actions.items():
-    dummy_policy[state] = 0 # Just pick the first available arm
+# # 3. Initialize the Environment
+# bandit_env = MultiStepBandit(
+#     branch_config=config, 
+#     reward_structure=rewards, 
+#     default_reward=-1 # Every step costs -1 unless specified
+# )
 
-# 5. Run Monte Carlo!
-print("Running Monte Carlo evaluation...")
-q_values = bandit_env.monte_carlo(dummy_policy, num_episodes=500)
+# # 4. Create a dummy policy
+# # Let's tell the agent to always pick action 0 (which avoids the jackpot!)
+# dummy_policy = {}
+# for state, actions in bandit_env.allowed_actions.items():
+#     dummy_policy[state] = 0 # Just pick the first available arm
 
-print("\nEstimated Q-Values for our Dummy Policy:")
-for state_action, value in sorted(q_values.items()):
-    print(f"State: {state_action[0]} | Action: {state_action[1]} -> Expected Return: {value:.2f}")
+# # 5. Run Monte Carlo!
+# print("Running Monte Carlo evaluation...")
+# q_values = bandit_env.monte_carlo(dummy_policy, num_episodes=500)
+
+# print("\nEstimated Q-Values for our Dummy Policy:")
+# for state_action, value in sorted(q_values.items()):
+#     print(f"State: {state_action[0]} | Action: {state_action[1]} -> Expected Return: {value:.2f}")
 
 
-# ==========================================
-# TEST SCRIPT (RANDOM POLICY)
-# ==========================================
+# # ==========================================
+# # TEST SCRIPT (RANDOM POLICY)
+# # ==========================================
 
-# 1. Define the Tree Structure
-config = {
-    0: {"m_i": 2, "actions_per_step": {1: 3, 2: 2}}, 
-    1: {"m_i": 1, "actions_per_step": {1: 5}} 
-}
+# # 1. Define the Tree Structure
+# config = {
+#     0: {"m_i": 2, "actions_per_step": {1: 3, 2: 2}}, 
+#     1: {"m_i": 1, "actions_per_step": {1: 5}} 
+# }
 
-# 2. Define Custom Rewards (Action 4 on Branch 1 is the Jackpot)
-rewards = {
-    ((1, 1), 4): {"reward_type": "deterministic", "value": 100}
-}
+# # 2. Define Custom Rewards (Action 4 on Branch 1 is the Jackpot)
+# rewards = {
+#     ((1, 1), 4): {"reward_type": "deterministic", "value": 100}
+# }
 
-# 3. Initialize the Environment
-bandit_env = MultiStepBandit(
-    branch_config=config, 
-    reward_structure=rewards, 
-    default_reward=-1 
-)
+# # 3. Initialize the Environment
+# bandit_env = MultiStepBandit(
+#     branch_config=config, 
+#     reward_structure=rewards, 
+#     default_reward=-1 
+# )
 
-# 4. Use allowed_actions as our Random Policy!
-random_policy = bandit_env.allowed_actions
+# # 4. Use allowed_actions as our Random Policy!
+# random_policy = bandit_env.allowed_actions
 
-# 5. Run Monte Carlo!
-print("Running Monte Carlo evaluation with a Random Policy...")
-q_values = bandit_env.monte_carlo(random_policy, num_episodes=2000)
+# # 5. Run Monte Carlo!
+# print("Running Monte Carlo evaluation with a Random Policy...")
+# q_values = bandit_env.monte_carlo(random_policy, num_episodes=2000)
 
-print("\nEstimated Q-Values for our Random Policy:")
-for state_action, value in sorted(q_values.items()):
-    print(f"State: {state_action[0]} | Action: {state_action[1]} -> Expected Return: {value:.2f}")
+# print("\nEstimated Q-Values for our Random Policy:")
+# for state_action, value in sorted(q_values.items()):
+#     print(f"State: {state_action[0]} | Action: {state_action[1]} -> Expected Return: {value:.2f}")
