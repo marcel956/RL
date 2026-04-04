@@ -30,4 +30,15 @@ Algorithms are only better than humans if the problem because so complex that a 
 
 ## Exercise 7
 
-TBD
+Best policies: When looking at those, the wind environment has the best score. That's because the wind is predictable, it
+always blows to the right. So the agent learns to use it to its advantage. For the noise environment the score gets worse
+the agent can't use it to an advantage so it takes longer to reach the goal, resulting in a lower score. The slip environment
+is the worst because walking along the bomb can push you into it quickly, so the agent has to take routes along the edges to 
+not get pushed into it.
+
+Worst policies: Not much difference in the environments. The bomb is close to the start so it only takes two steps to get there.
+It gets reached quickly in every environment, so the score for it is always -10.
+
+Random and Uniformly random: They both perform very bad in every environment. Which makes sense because both policies are just 
+blindly guessing a path. So the score are at around -7 to -9. Sometimes fixed random can get lucky and constantly bump into a
+wall, which results in a lower score because it avoids the bomb.
