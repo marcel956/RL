@@ -93,7 +93,7 @@ env = gridworld(
 
 for max_steps in range(1,7):
 
-    V, policy = policy_iteration(env, gamma=0.9, max_steps=max_steps, use_Q=False)
+    V, policy, x = policy_iteration(env, gamma=0.9, V_star=None, max_steps=max_steps, use_Q=False)
 
     visualize_grid(V, policy)
 
