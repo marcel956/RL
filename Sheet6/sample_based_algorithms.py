@@ -2,12 +2,15 @@ import sys
 from pathlib import Path
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 sheet4_path = Path(__file__).parent.parent / "Sheet4"
+sheet5_path = Path(__file__).parent.parent / "Sheet5"
+
 
 # Add this folder to Python's search path
 sys.path.append(str(sheet4_path))
+sys.path.append(str(sheet5_path))
+
 
 from gridworld import gridworld
 from hard_policy_evaluation import policy_evaluation, value_iteration, monte_carlo_optimal_policy, worst_value_iteration
@@ -20,7 +23,7 @@ from dynamic_programming import policy_evaluation_finiteMDP, optimal_control
 
 
 
-def step_size_scheduler(schedule_type, visit_count, initial_alpha):
+def step_size_scheduler(schedule_type, visit_count, initial_alpha=1):
 # Ensure visit_count is at least 1 so we never divide by zero!
     n = max(1, visit_count) 
     
@@ -42,9 +45,8 @@ def monte_carlo_Q(env, policy, num_episodes, gamma=1.0, first_visit=False, Q=Non
 
         # Initialize variables for Q values and returns
         if Q is None and N is None:
-            Q = {}
-
-            N = {}
+            Q = {(state, action): 0.0 for state in env.allowed_actions.keys() for action in env.allowed_actions[state]}
+            N = {(state, action): 0 for state in env.allowed_actions.keys() for action in env.allowed_actions[state]}
 
         # Loop through number of episodes
         for i in range(num_episodes):
@@ -95,10 +97,6 @@ def monte_carlo_Q(env, policy, num_episodes, gamma=1.0, first_visit=False, Q=Non
                     if state_action in earlier_state_actions:
                         continue
 
-
-                if state_action not in Q:
-                    Q[state_action] = 0.0
-                    N[state_action] = 0
 
                 # Calculate Q value
                 N[state_action] += 1
@@ -210,7 +208,7 @@ def monte_carlo_V(env, policy, num_episodes, gamma=1.0, first_visit=False, V=Non
 
 
 
-def totally_async_policy_evaluation(env, policy, num_episodes, schedule_type="constant", gamma=1.0, V=None, N=None):
+def totally_async_policy_evaluation(env, policy, num_episodes, schedule_type="constant", gamma=1.0, V=None, N=None, output = "V"):
 
         # Initialize variables for V values and returns
         if V is None and N is None:
@@ -267,8 +265,14 @@ def totally_async_policy_evaluation(env, policy, num_episodes, schedule_type="co
                 if is_terminal:
                     break
 
+        if output == "V":
 
-        return V, N
+            return V, N
+        else:
+            Q = V_into_Q(env, V, gamma)
+            return Q, N
+
+
 
 
 
@@ -332,8 +336,19 @@ def Q_learning(env, policy, num_episodes, gamma=1.0, schedule_type="constant", Q
             if is_terminal:
                 break
 
-
     return Q, N
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -372,6 +387,34 @@ def Q_into_V(env, Q):
         V[state] = max(Q[state, action] for action in env.allowed_actions[state])
 
     return V
+
+
+
+def V_into_Q(env, V, gamma=1.0):
+    Q = {}
+    for state in env.allowed_actions.keys():
+        
+        # Skip terminal states since we can't transition out of them!
+        if state in env.terminal_states:
+            continue
+            
+        for action in env.allowed_actions[state]:
+            q_val = 0
+            
+            # Use YOUR tuple key structure: (state, action)
+            for next_state, prob in env.transition_probabilities[(state, action)].items():
+                
+                # Get the reward from your 2D NumPy array
+                reward = env.expected_rewards[next_state[0], next_state[1]]
+                
+                # Apply the Bellman equation
+                q_val += prob * (reward + gamma * V[next_state])
+                
+            Q[(state, action)] = q_val
+            
+    return Q
+
+
 
 
 
