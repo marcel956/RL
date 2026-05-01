@@ -19,7 +19,11 @@ class gridworld:
 
 
         # Build expected rewards matrix and terminal states list
-        expected_rewards = np.ones((m, n)) *  default_reward
+        if isinstance(default_reward, list):
+            expected_rewards = np.ones((m, n)) * np.mean(default_reward)
+        else:
+            expected_rewards = np.ones((m, n)) * default_reward
+
         terminal_states = []
 
         for i in reward_structure:
@@ -35,6 +39,10 @@ class gridworld:
             elif reward_structure[i]["reward_type"] == "binomial":
 
                 expected_rewards[i[0], i[1]] = reward_structure[i]["n"] * reward_structure[i]["p"]
+
+            elif reward_structure[i]["reward_type"] == "choice":
+
+                expected_rewards[i[0], i[1]] = np.mean(reward_structure[i]["values"])
 
             if reward_structure[i]["is_terminal"]:
                 terminal_states.append((i[0], i[1]))
@@ -216,8 +224,13 @@ class gridworld:
                 reward = np.random.normal(self.reward_structure[next_state]["mean"], self.reward_structure[next_state]["std"])
             elif self.reward_structure[next_state]["reward_type"] == "binomial":
                 reward = np.random.binomial(self.reward_structure[next_state]["n"], self.reward_structure[next_state]["p"])
+            elif self.reward_structure[next_state]["reward_type"] == "choice":
+                reward = np.random.choice(self.reward_structure[next_state]["values"])
         else: 
-            reward = self.default_reward
+            if isinstance(self.default_reward, list):
+                reward = np.random.choice(self.default_reward)
+            else:
+                reward = self.default_reward
 
 
         # Check if next state is terminal

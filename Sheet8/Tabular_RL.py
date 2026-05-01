@@ -14,6 +14,7 @@ sheet6_path = Path(__file__).parent.parent / "Sheet6"
 # Add this folder to Python's search path
 sys.path.append(str(sheet4_path))
 sys.path.append(str(sheet5_path))
+sys.path.append(str(sheet6_path))
 
 
 from gridworld import gridworld
@@ -21,3 +22,9 @@ from hard_policy_evaluation import policy_evaluation, value_iteration, monte_car
 from game_dynamic_algorithms import policy_iteration, value_iteration, policy_evaluation
 from dynamic_programming import policy_evaluation_finiteMDP, optimal_control
 from sample_based_algorithms import monte_carlo_Q, monte_carlo_V, totally_async_policy_evaluation, Q_learning, RMSE_evaluation, Q_into_policy, Q_into_V, evaluate_pit_stop
+
+
+
+
+
+

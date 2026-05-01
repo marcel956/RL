@@ -279,7 +279,7 @@ def totally_async_policy_evaluation(env, policy, num_episodes, schedule_type="co
 
 
 
-def Q_learning(env, policy, num_episodes, gamma=1.0, schedule_type="constant", Q=None, N=None):
+def fixed_Q_learning(env, policy, num_episodes, gamma=1.0, schedule_type="constant", Q=None, N=None):
 
 
     # Initialize variables for Q values and N
@@ -337,8 +337,6 @@ def Q_learning(env, policy, num_episodes, gamma=1.0, schedule_type="constant", Q
                 break
 
     return Q, N
-
-
 
 
 
