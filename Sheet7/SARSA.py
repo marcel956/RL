@@ -85,4 +85,4 @@ def SARSA(env, num_episodes, gamma=1.0, alpha_schedule="constant", epsilon=0.1, 
             if is_terminal:
                 break
 
-    return Q, N
+    return Q

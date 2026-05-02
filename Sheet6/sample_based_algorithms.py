@@ -480,3 +480,47 @@ def evaluate_pit_stop(env, Q_curr, V_opt_policy, start_state, k_timesteps):
     start_q_value = max([Q_curr[(start_state, a)] for a in env.allowed_actions[start_state]])
 
     return avg_score, correct_rate, start_q_value
+
+
+
+
+def calculate_bias(env, Q_table, true_V, gamma=0.9):
+    total_bias = 0.0
+    squared_bias = 0.0
+    
+    print(f"{'State':<10} | {'Action':<10} | {'Estimated Q':<12} | {'True Q':<10} | {'Bias'}")
+    print("-" * 60)
+
+    for state in env.allowed_actions:
+        if state in env.terminal_states:
+            continue
+            
+        for action in env.allowed_actions[state]:
+            
+            # 1. Look up the estimated value from the algorithm
+            estimated_Q = Q_table[(state, action)]
+            
+            # 2. Calculate the True expected value mathematically
+            trans_probs = env.transition_probabilities[(state, action)]
+            true_Q = 0.0
+            
+            for next_state, prob in trans_probs.items():
+                expected_reward = env.get_expected_rewards(state, action, next_state)
+                true_Q += prob * (expected_reward + gamma * true_V[next_state])
+                
+            # 3. Calculate the Bias
+            bias = estimated_Q - true_Q
+            
+            total_bias += bias
+            squared_bias += bias ** 2
+            
+            print(f"{str(state):<10} | {action:<10} | {estimated_Q:<12.4f} | {true_Q:<10.4f} | {bias:.4f}")
+
+    print("-" * 60)
+    print(f"Summed Total Bias:         {total_bias:.4f}")
+    print(f"Summed Squared Total Bias: {squared_bias:.4f}")
+    
+    return total_bias, squared_bias
+
+
+

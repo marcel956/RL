@@ -115,4 +115,5 @@ plot_policy(env, infinite_val_iter_2[1], 'Infinite Value Iteration: gamma = 0.05
 # während eine andere Aufgabe, wie die eines Sicherheitsroboters, möglicherweise keine Endzeit hat. Für den Fall der unendlichen Laufzeit verwenden wir 
 # diskontierte Belohnungen, um die Konvergenz zu einem Fixpunkt sicherzustellen. Die Strategie und die gewählten Aktionen können sich in einer Umgebung mit 
 # endlicher Zeit aufgrund des zusätzlichen Zeitdrucks ebenfalls ändern. Das bedeutet, dass wir für unendliche MDPs eine stationäre optimale Strategie finden können, 
-# für endliche jedoch nicht, da die verbleibende Zeit einen Einfluss hat. Wenn beispielsweise nur noch wenige Runden übrig sind, kann die Strategie aggressiver sein, um den Endzustand zu erreichen und die Belohnung zu erhalten.
+# für endliche jedoch nicht, da die verbleibende Zeit einen Einfluss hat. Wenn beispielsweise nur noch wenige Runden übrig sind, kann die Strategie aggressiver sein, 
+# um den Endzustand zu erreichen und die Belohnung zu erhalten.

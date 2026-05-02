@@ -57,13 +57,14 @@ def Q_learning(env, epsilon, num_episodes, gamma=1.0, schedule_type="constant", 
                 action = np.random.choice(env.allowed_actions[state])
             # Choose best action from Q
             else:
-                best_action = None
-                best_value = -float('inf')
-                for a in env.allowed_actions[state]:
-                    if Q[(state, a)] > best_value:
-                        best_value = Q[(state, a)]
-                        best_action = a
-                action = best_action
+                # Find the highest Q-value available
+                max_q = max([Q[(state, a)] for a in env.allowed_actions[state]])
+                
+                # Collect ALL actions that have that exact maximum value
+                best_actions = [a for a in env.allowed_actions[state] if Q[(state, a)] == max_q]
+                
+                # Randomly choose one of the winners to break ties!
+                action = np.random.choice(best_actions)
 
 
 

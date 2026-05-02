@@ -60,11 +60,11 @@ class gridworld:
 
                 if row == 0:
                     possible_actions.remove("up")
-                elif row == m - 1:
+                if row == m - 1:
                     possible_actions.remove("down")
                 if col == 0:
                     possible_actions.remove("left")
-                elif col == n - 1:
+                if col == n - 1:
                     possible_actions.remove("right")
 
                 allowed_actions[(row, col)] = possible_actions
