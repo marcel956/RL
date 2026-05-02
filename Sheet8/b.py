@@ -19,6 +19,7 @@ sys.path.append(str(sheet5_path))
 
 from gridworld import gridworld
 from game_dynamic_algorithms import value_iteration
+from dynamic_programming import optimal_control
 
 
 # ==========================================
@@ -96,16 +97,16 @@ def plot_policy(env, policy, title):
 
 
 
-finite_val_iter_3 = value_iteration(env, gamma=1.0, V_star=None, epsilon=-1, max_steps=3, async_update=False, use_Q=False)
-finite_val_iter_10 = value_iteration(env, gamma=1.0, V_star=None, epsilon=-1, max_steps=10, async_update=False, use_Q=False)
-finite_val_iter_20 = value_iteration(env, gamma=1.0, V_star=None, epsilon=-1, max_steps=20, async_update=False, use_Q=False)
+finite_val_iter_3 = optimal_control(env, gamma=1.0, T=3)
+finite_val_iter_10 = optimal_control(env, gamma=1.0, T=10)
+finite_val_iter_20 = optimal_control(env, gamma=1.0, T=20)
 
 infinite_val_iter = value_iteration(env, gamma=0.5, V_star=None, epsilon=1e-6, max_steps=None, async_update=False, use_Q=False)
 infinite_val_iter_2 = value_iteration(env, gamma=0.05, V_star=None, epsilon=1e-6, max_steps=None, async_update=False, use_Q=False)
 
-plot_policy(env, finite_val_iter_3[1], 'Finite Value Iteration: gamma = 1.0, max iter =  3')
-plot_policy(env, finite_val_iter_10[1], 'Finite Value Iteration: gamma = 1.0, max iter = 10')
-plot_policy(env, finite_val_iter_20[1], 'Finite Value Iteration: gamma = 1.0, max iter = 20')
+plot_policy(env, finite_val_iter_3[1][0], 'Finite Value Iteration: gamma = 1.0, max iter =  3')
+plot_policy(env, finite_val_iter_10[1][0], 'Finite Value Iteration: gamma = 1.0, max iter = 10')
+plot_policy(env, finite_val_iter_20[1][0], 'Finite Value Iteration: gamma = 1.0, max iter = 20')
 plot_policy(env, infinite_val_iter[1], 'Infinite Value Iteration: gamma = 0.5')
 plot_policy(env, infinite_val_iter_2[1], 'Infinite Value Iteration: gamma = 0.05')
 
