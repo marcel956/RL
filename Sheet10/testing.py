@@ -16,29 +16,6 @@ def run_comparison():
     print(f"Starting training for {total_timesteps} timesteps on {env_name}...\n")
 
 
-    # =========================================================================
-    # 4. Train Infinite-Horizon Mini-Batch REINFORCE (Algorithm 33)
-    # =========================================================================
-    print("--- Training Infinite-Horizon Mini-Batch REINFORCE ---")
-    mini_batch_rf_model = mini_batch_REINFORCE(
-        "MlpPolicy",
-        train_env,
-        batch_size_K=64,  # Number of geometric dual-rollout paths evaluated per step
-        learning_rate=1e-3,
-        gamma=0.99,
-        verbose=0,
-    )
-    mini_batch_rf_model.learn(total_timesteps=total_timesteps)
-
-    # Evaluate Mini-Batch REINFORCE
-    mean_reward_mbrf, std_reward_mbrf = evaluate_policy(
-        mini_batch_rf_model, eval_env, n_eval_episodes=10, deterministic=True
-    )
-    print(f"Mini-Batch REINFORCE Mean Reward: {mean_reward_mbrf} +/- {std_reward_mbrf}\n")
-
-
-
-
 
 
     # =========================================================================
@@ -92,7 +69,6 @@ def run_comparison():
     print("==========================================")
     print(f"Standard REINFORCE:             {mean_reward_rf:.2f}")
     print(f"Standard A2C:                   {mean_reward_a2c:.2f}")
-    print(f"Infinite-Horizon Mini-Batch RF: {mean_reward_mbrf:.2f}")
 
     train_env.close()
     eval_env.close()
