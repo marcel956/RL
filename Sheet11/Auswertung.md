@@ -5,6 +5,26 @@ Gymnasium *Classic-Control*-Umgebungen. Grundlage der Auswertung ist der
 Datensatz [`rl_evaluation_results_realrun.csv`](rl_evaluation_results_realrun.csv)
 (3300 Messpunkte), erzeugt mit [`algorithms.py`](algorithms.py).
 
+### Datengrundlage & Datenintegrität
+
+Es liegen drei CSV-Dateien vor; ausgewertet wird ausschließlich `realrun`:
+
+| Datei | Inhalt | Verwendung |
+|---|---|---|
+| `rl_evaluation_results_realrun.csv` | vollständiger Lauf, 3300 Punkte, 100 k Steps, 20 Checkpoints | **Auswertung** |
+| `rl_evaluation_results_realbackup.csv` | **byte-für-byte identisch** zu `realrun` | nur Checkpoint-Backup, keine eigene Info |
+| `rl_evaluation_results_testrun.csv` | Smoke-Test: 1650 Punkte, nur 10 Mikro-Checkpoints à 1 Step | **nicht** ausgewertet (untrainiert) |
+
+- Das `realbackup` ist die vom Skript nach jedem Seed automatisch geschriebene
+  Sicherung desselben Laufs (vgl. `algorithms.py`, Zeile 129 f.). Der Abgleich
+  ergibt vollständige Identität → bestätigt, dass der Lauf komplett durchlief
+  und keine Messpunkte fehlen.
+- Der `testrun` diente nur der Pipeline-Validierung über alle Envs/Algos
+  (`total_timesteps=10`, `eval_freq=1`). Die Rewards sind praktisch
+  untrainiertes Rauschen (z. B. A2C auf CartPole 10–120 je nach Seed; PPO =
+  500 nur, weil CartPole schon initial trivial lösbar ist) und damit für einen
+  Algorithmenvergleich ungeeignet.
+
 ---
 
 ## Versuchsaufbau (Teil a)
