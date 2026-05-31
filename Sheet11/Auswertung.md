@@ -42,7 +42,6 @@ Es liegen drei CSV-Dateien vor; ausgewertet wird ausschließlich `realrun`:
 **Algorithmen (8 vorimplementierte + eigene REINFORCE-Implementierung):**
 A2C, DDPG, PPO, SAC, TD3 (Stable-Baselines3), ARS, TQC, TRPO (sb3-contrib)
 sowie die eigene **REINFORCE**-Implementierung aus Sheet 10.
-*Mini-Batch-REINFORCE wurde – wie abgesprochen – nicht ausgewertet.*
 
 DDPG, SAC, TD3 und TQC sind reine Continuous-Control-Verfahren und wurden nur
 auf den beiden kontinuierlichen Umgebungen ausgeführt.
